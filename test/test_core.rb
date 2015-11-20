@@ -394,43 +394,23 @@ class ParanoidTest < ParanoidBaseTest
     assert_equal 0, ParanoidString.with_deleted.where(:id => ps).count
   end
 
-  # Test boolean type columns, that are not nullable
-  def test_boolean_type_with_no_nil_value_before_destroy
-    ps = ParanoidBooleanNotNullable.create!()
-    assert_equal 1, ParanoidBooleanNotNullable.where(:id => ps).count
+  def test_decrement_counters
+    paranoid_boolean = ParanoidBoolean.create(:name => "boolean")
+    paranoid_with_counter_cache = paranoid_boolean.create_paranoid_with_counter_cache(:name => "with_counter")
+
+    assert_equal 1, paranoid_boolean.paranoid_with_counter_caches_count
+
+    paranoid_with_counter_cache.destroy
+    assert_equal 0, paranoid_boolean.reload.paranoid_with_counter_caches_count
   end
 
-  def test_boolean_type_with_no_nil_value_after_destroy
-    ps = ParanoidBooleanNotNullable.create!()
-    ps.destroy
-    assert_equal 0, ParanoidBooleanNotNullable.where(:id => ps).count
-  end
+  def test_hard_destroy_decrement_counters
+    paranoid_boolean = ParanoidBoolean.create(:name => "boolean")
+    paranoid_with_counter_cache = paranoid_boolean.create_paranoid_with_counter_cache(:name => "with_counter")
 
-  def test_boolean_type_with_no_nil_value_before_destroy_with_deleted
-    ps = ParanoidBooleanNotNullable.create!()
-    assert_equal 1, ParanoidBooleanNotNullable.with_deleted.where(:id => ps).count
-  end
+    assert_equal 1, paranoid_boolean.paranoid_with_counter_caches_count
 
-  def test_boolean_type_with_no_nil_value_after_destroy_with_deleted
-    ps = ParanoidBooleanNotNullable.create!()
-    ps.destroy
-    assert_equal 1, ParanoidBooleanNotNullable.with_deleted.where(:id => ps).count
-  end
-
-  def test_boolean_type_with_no_nil_value_before_destroy_only_deleted
-    ps = ParanoidBooleanNotNullable.create!()
-    assert_equal 0, ParanoidBooleanNotNullable.only_deleted.where(:id => ps).count
-  end
-
-  def test_boolean_type_with_no_nil_value_after_destroy_only_deleted
-    ps = ParanoidBooleanNotNullable.create!()
-    ps.destroy
-    assert_equal 1, ParanoidBooleanNotNullable.only_deleted.where(:id => ps).count
-  end
-
-  def test_boolean_type_with_no_nil_value_after_destroyed_twice
-    ps = ParanoidBooleanNotNullable.create!()
-    2.times { ps.destroy }
-    assert_equal 0, ParanoidBooleanNotNullable.with_deleted.where(:id => ps).count
+    paranoid_with_counter_cache.destroy_fully!
+    assert_equal 0, paranoid_boolean.reload.paranoid_with_counter_caches_count
   end
 end
